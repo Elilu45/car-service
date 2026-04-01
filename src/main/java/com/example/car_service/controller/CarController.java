@@ -1,8 +1,11 @@
 package com.example.car_service.controller;
 
+import com.example.car_service.dto.CarDTO;
 import com.example.car_service.dto.CustomResponse;
 import com.example.car_service.model.Car;
 import com.example.car_service.repository.CarRepository;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +28,13 @@ public class CarController {
     // }
 
     @PostMapping
-    public ResponseEntity<CustomResponse<Car>> create(@RequestBody Car car) {
-        Car savedCar = repository.save(car);
+    public ResponseEntity<CustomResponse<Car>> create(@Valid @RequestBody CarDTO carDTO) {
+        // Trasformiamo il DTO in una Entity per salvarla nel DB
+        Car car = new Car();
+        car.setBrand(carDTO.getBrand());
+        car.setModel(carDTO.getModel());
+        
+        Car savedCar = repository.save(car); // Il tuo service salva la Entity
 
         // Creiamo il nostro oggetto risposta personalizzato
         CustomResponse<Car> response = new CustomResponse<>(
