@@ -63,7 +63,7 @@ public class CarController {
         List<Car> cars;
 
         if (brand != null && model != null) {
-            cars = repository.findByBrandIgnoreCaseAndModelIgnoreCaseContaining(brand, model);
+            cars = repository.findByBrandIgnoreCaseContainingAndModelIgnoreCaseContaining(brand, model);
         } else if (brand != null) {
             cars = repository.findByBrandIgnoreCaseContaining(brand);
         } else if (model != null) {
