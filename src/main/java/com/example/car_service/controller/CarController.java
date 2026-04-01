@@ -33,7 +33,9 @@ public class CarController {
         Car car = new Car();
         car.setBrand(carDTO.getBrand());
         car.setModel(carDTO.getModel());
-        
+        car.setPrice(carDTO.getPrice());
+        //car.setRegistrationDate(carDTO.getRegistrationDate());
+
         Car savedCar = repository.save(car); // Il tuo service salva la Entity
 
         // Creiamo il nostro oggetto risposta personalizzato
@@ -54,13 +56,20 @@ public class CarController {
     // }
 
     @GetMapping
-    public ResponseEntity<CustomResponse<List<Car>>> getByBrand(@RequestParam(required = false) String brand) {
+    public ResponseEntity<CustomResponse<List<Car>>> getByBrand(
+        @RequestParam(required = false) String brand,
+        @RequestParam(required = false) String model
+    ) {
         List<Car> cars;
 
-        if (brand == null) {
-            cars = repository.findAll();
+        if (brand != null && model != null) {
+            cars = repository.findByBrandIgnoreCaseAndModelIgnoreCase(brand, model);
+        } else if (brand != null) {
+            cars = repository.findByBrandIgnoreCaseContaining(brand);
+        } else if (model != null) {
+            cars = repository.findByModelIgnoreCaseContaining(model);
         } else {
-            cars = repository.findByBrandIgnoreCase(brand);
+            cars = repository.findAll();
         }
 
         // Creiamo un messaggio dinamico per aiutare chi legge i log
