@@ -45,11 +45,27 @@ public class CarController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // @GetMapping
+    // public List<Car> getByBrand(@RequestParam(required = false) String brand) {
+    //     if (brand == null) {
+    //         return repository.findAll(); // Se non c'è il brand, dammi tutto!
+    //     }
+    //     return repository.findByBrandIgnoreCase(brand);
+    // }
+
     @GetMapping
-    public List<Car> getByBrand(@RequestParam(required = false) String brand) {
+    public ResponseEntity<CustomResponse<List<Car>>> getByBrand(@RequestParam(required = false) String brand) {
+        List<Car> cars;
+
         if (brand == null) {
-            return repository.findAll(); // Se non c'è il brand, dammi tutto!
+            cars = repository.findAll();
+        } else {
+            cars = repository.findByBrandIgnoreCase(brand);
         }
-        return repository.findByBrandIgnoreCase(brand);
+
+        // Creiamo un messaggio dinamico per aiutare chi legge i log
+        String message = cars.isEmpty() ? "Nessuna auto trovata" : "Lista auto recuperata con successo";
+
+        return ResponseEntity.ok(new CustomResponse<>(message, cars));
     }
 }
