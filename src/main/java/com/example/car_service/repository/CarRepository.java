@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CarRepository extends JpaRepository<Car, Long> {
 
-    List<Car> findByBrandIgnoreCaseAndModelIgnoreCase(String brand, String model);
+    List<Car> findByBrandIgnoreCaseAndModelIgnoreCaseContaining(String brand, String model);
 
     List<Car> findByBrandIgnoreCase(String brand);
 
