@@ -15,12 +15,5 @@ public class Car {
     private String brand;
     private String model;
     private Double price;
-    @Column(updatable = false) // La data non deve cambiare se modifichi l'auto in futuro
     private LocalDate registrationDate;
-
-    // Questo metodo viene eseguito AUTOMATICAMENTE prima del salvataggio nel DB
-    @PrePersist
-    protected void onCreate() {
-        this.registrationDate = LocalDate.now();
-    }
 }

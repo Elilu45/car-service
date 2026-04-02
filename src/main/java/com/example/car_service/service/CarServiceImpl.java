@@ -4,6 +4,8 @@ import com.example.car_service.dto.CarDTO;
 import com.example.car_service.model.Car;
 import com.example.car_service.repository.CarRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Service // <-- FONDAMENTALE: Dice a Spring che questa è la classe da "iniettare"
@@ -36,7 +38,9 @@ public class CarServiceImpl implements CarService {
         car.setBrand(carDTO.getBrand());
         car.setModel(carDTO.getModel());
         car.setPrice(carDTO.getPrice());
-        // La data la mette il @PrePersist che abbiamo aggiunto ieri!
+        
+        car.setRegistrationDate(LocalDate.now()); // Impostiamo la data di registrazione a oggi
+
         return repository.save(car);
     }
 
