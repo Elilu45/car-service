@@ -4,6 +4,8 @@ import com.example.car_service.dto.CarDTO;
 import com.example.car_service.model.Car;
 import com.example.car_service.repository.CarRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Service // <-- FONDAMENTALE: Dice a Spring che questa è la classe da "iniettare"
+@Slf4j // <-- Questa annotazione crea automaticamente un oggetto chiamato 'log'
 public class CarServiceImpl implements CarService {
 
     private final CarRepository repository;
@@ -38,8 +41,8 @@ public class CarServiceImpl implements CarService {
     @Override
     public void processExternalCheck(Car car) {
         try {
-            System.out.println("Inizio controllo esterno per: " + car.getBrand() + " alle " + LocalTime.now());
-            
+            log.info("Inizio controllo esterno per: " + car.getBrand() + " alle " + LocalTime.now());
+
             // Simuliamo un'attesa di 5 secondi
             Thread.sleep(5000);
 
@@ -49,7 +52,7 @@ public class CarServiceImpl implements CarService {
             // 2. FONDAMENTALE: Salvi di nuovo l'oggetto per aggiornare il DB
             repository.save(car);
             
-            System.out.println("Controllo completato per: " + car.getBrand() + " alle " + LocalTime.now());
+            log.info("Controllo completato per: " + car.getBrand() + " alle " + LocalTime.now());
 
         } catch (InterruptedException e) {
             e.printStackTrace();
