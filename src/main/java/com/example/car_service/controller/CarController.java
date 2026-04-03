@@ -12,8 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/api/cars")
+@Slf4j
 public class CarController {
 
     private final CarService carService; // Usiamo l'interfaccia!
@@ -29,14 +32,16 @@ public class CarController {
 
         Car savedCar = carService.saveCar(carDTO); // Il service si occupa di tutto, anche di mettere la data!
 
+        log.info("Auto salvata con ID {}. Lancio controllo asincrono...", savedCar.getId());
+
+        // Chiamata asincrona: il codice NON si ferma qui ad aspettare 5 secondi!
+        carService.processExternalCheck(savedCar);
+
         // Creiamo il nostro oggetto risposta personalizzato
         CustomResponse<Car> response = new CustomResponse<>(
    "Ottimo! L'auto è stata salvata nel database.", 
             savedCar
         );
-
-        // Chiamata asincrona: il codice NON si ferma qui ad aspettare 5 secondi!
-        carService.processExternalCheck(savedCar);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
