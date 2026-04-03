@@ -16,4 +16,5 @@ public class Car {
     private String model;
     private Double price;
     private LocalDate registrationDate;
+    private Boolean checkAuto = false;
 }

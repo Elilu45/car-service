@@ -35,6 +35,9 @@ public class CarController {
             savedCar
         );
 
+        // Chiamata asincrona: il codice NON si ferma qui ad aspettare 5 secondi!
+        carService.processExternalCheck(savedCar);
+
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
