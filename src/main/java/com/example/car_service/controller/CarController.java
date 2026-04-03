@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC; // <--- Per la gestione del contesto dei log
 
 @RestController
 @RequestMapping("/api/cars")
@@ -29,13 +30,15 @@ public class CarController {
     @PostMapping
     public ResponseEntity<CustomResponse<Car>> create(@Valid @RequestBody CarDTO carDTO) {
         // Trasformiamo il DTO in una Entity per salvarla nel DB
+        // 1. Recuperiamo l'ID che il Filtro ha messo nell'MDC
+        String currentRequestId = MDC.get("car-Request-ID");
 
         Car savedCar = carService.saveCar(carDTO); // Il service si occupa di tutto, anche di mettere la data!
 
         log.info("Auto salvata con ID {}. Lancio controllo asincrono...", savedCar.getId());
 
         // Chiamata asincrona: il codice NON si ferma qui ad aspettare 5 secondi!
-        carService.processExternalCheck(savedCar);
+        carService.processExternalCheck(savedCar, currentRequestId);
 
         // Creiamo il nostro oggetto risposta personalizzato
         CustomResponse<Car> response = new CustomResponse<>(
