@@ -5,12 +5,13 @@ import com.example.car_service.model.Car;
 import com.example.car_service.repository.CarRepository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC; // <--- Per la gestione del contesto dei log
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
+//import java.time.LocalTime;
 import java.util.List;
 
 @Service // <-- FONDAMENTALE: Dice a Spring che questa è la classe da "iniettare"
@@ -27,7 +28,7 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car saveCar(CarDTO carDTO) {
-        log.info("Salvataggio auto: {}", carDTO.getBrand());
+        log.info("Salvataggio auto: {} modello {}", carDTO.getBrand(), carDTO.getModel());
 
         Car car = new Car();
         car.setBrand(carDTO.getBrand());
@@ -35,18 +36,23 @@ public class CarServiceImpl implements CarService {
         car.setPrice(carDTO.getPrice());
 
         LocalDate oggi = LocalDate.now();
-        
         car.setRegistrationDate(oggi); // Impostiamo la data di registrazione a oggi
 
-        log.info("Auto salvata: {} alle {}", car.getBrand(), oggi);
+        String currentRequestId = MDC.get("car-Request-ID");
+        car.setRequestId(currentRequestId);
+        
+        log.info("Auto salvata: {} modello {} il {}", car.getBrand(), car.getModel(), oggi);
         return repository.save(car);
     }
 
     @Async // <--- DICHIARA CHE IL METODO GIRA SU UN ALTRO THREAD
     @Override
-    public void processExternalCheck(Car car) {
+    public void processExternalCheck(Car car, String requestId) {
         try {
-            log.info("Inizio controllo esterno per: " + car.getBrand() + " alle " + LocalTime.now());
+            // Fondamentale: iniettiamo l'ID nel nuovo thread
+            MDC.put("car-Request-ID", requestId);
+
+            log.info("Inizio controllo esterno per: {} modello {} il {}" , car.getBrand(), car.getModel(), LocalDate.now());
 
             // Simuliamo un'attesa di 5 secondi
             Thread.sleep(5000);
@@ -57,10 +63,13 @@ public class CarServiceImpl implements CarService {
             // 2. FONDAMENTALE: Salvi di nuovo l'oggetto per aggiornare il DB
             repository.save(car);
             
-            log.info("Controllo completato per: " + car.getBrand() + " alle " + LocalTime.now());
+            log.info("Controllo completato per: {} modello {} il {}", car.getBrand(), car.getModel(), LocalDate.now());
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Errore durante il controllo asincrono", e);
+        } finally {
+            // Puliamo l'MDC anche qui per buona norma
+            MDC.remove("car-Request-ID");
         }
     }
 
