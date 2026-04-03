@@ -27,13 +27,18 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car saveCar(CarDTO carDTO) {
+        log.info("Salvataggio auto: {}", carDTO.getBrand());
+
         Car car = new Car();
         car.setBrand(carDTO.getBrand());
         car.setModel(carDTO.getModel());
         car.setPrice(carDTO.getPrice());
-        
-        car.setRegistrationDate(LocalDate.now()); // Impostiamo la data di registrazione a oggi
 
+        LocalDate oggi = LocalDate.now();
+        
+        car.setRegistrationDate(oggi); // Impostiamo la data di registrazione a oggi
+
+        log.info("Auto salvata: {} alle {}", car.getBrand(), oggi);
         return repository.save(car);
     }
 
