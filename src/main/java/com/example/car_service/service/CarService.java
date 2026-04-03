@@ -10,4 +10,6 @@ public interface CarService {
 
     // Promessa 2: "Salverò un'auto partendo da un DTO"
     Car saveCar(CarDTO carDTO);
+
+    void processExternalCheck(Car car); // Promessa 3: "Farò un controllo esterno (simulato) su un'auto"
 }
