@@ -32,3 +32,11 @@
 2026-04-03T10:46:28.656+02:00  INFO 39944 --- [car-service] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
 2026-04-03T10:46:28.798+02:00  INFO 39944 --- [car-service] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
 2026-04-03T10:46:28.831+02:00  INFO 39944 --- [car-service] [restartedMain] c.e.car_service.CarServiceApplication    : Started CarServiceApplication in 13.352 seconds (process running for 14.205)
+2026-04-03T10:47:25.645+02:00  INFO 39944 --- [car-service] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-03T10:47:25.646+02:00  INFO 39944 --- [car-service] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-03T10:47:25.648+02:00  INFO 39944 --- [car-service] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-04-03T10:47:26.153+02:00  INFO 39944 --- [car-service] [http-nio-8080-exec-1] c.e.car_service.service.CarServiceImpl   : Salvataggio auto: PEUGEOT
+2026-04-03T10:47:26.154+02:00  INFO 39944 --- [car-service] [http-nio-8080-exec-1] c.e.car_service.service.CarServiceImpl   : Auto salvata: PEUGEOT alle 2026-04-03
+2026-04-03T10:47:26.427+02:00  INFO 39944 --- [car-service] [http-nio-8080-exec-1] c.e.c.controller.CarController           : Auto salvata con ID 16. Lancio controllo asincrono...
+2026-04-03T10:47:26.435+02:00  INFO 39944 --- [car-service] [task-1] c.e.car_service.service.CarServiceImpl   : Inizio controllo esterno per: PEUGEOT alle 10:47:26.434322
+2026-04-03T10:47:31.498+02:00  INFO 39944 --- [car-service] [task-1] c.e.car_service.service.CarServiceImpl   : Controllo completato per: PEUGEOT alle 10:47:31.497692600
