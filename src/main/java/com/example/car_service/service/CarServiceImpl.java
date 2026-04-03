@@ -36,9 +36,11 @@ public class CarServiceImpl implements CarService {
         car.setPrice(carDTO.getPrice());
 
         LocalDate oggi = LocalDate.now();
-        
         car.setRegistrationDate(oggi); // Impostiamo la data di registrazione a oggi
 
+        String currentRequestId = MDC.get("car-Request-ID");
+        car.setRequestId(currentRequestId);
+        
         log.info("Auto salvata: {} modello {} il {}", car.getBrand(), car.getModel(), oggi);
         return repository.save(car);
     }
