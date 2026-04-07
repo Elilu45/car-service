@@ -23,7 +23,7 @@ public class CarController {
     private final CarService carService; // Usiamo l'interfaccia!
 
     public CarController(CarService carService) {
-            this.carService = carService;
+        this.carService = carService;
     }
 
 
@@ -31,7 +31,7 @@ public class CarController {
     public ResponseEntity<CustomResponse<Car>> create(@Valid @RequestBody CarDTO carDTO) {
         // Trasformiamo il DTO in una Entity per salvarla nel DB
         // 1. Recuperiamo l'ID che il Filtro ha messo nell'MDC
-        String currentRequestId = MDC.get("car-Request-ID");
+        String currentRequestId = MDC.get("x-Request-ID");
 
         Car savedCar = carService.saveCar(carDTO); // Il service si occupa di tutto, anche di mettere la data!
 
@@ -54,7 +54,11 @@ public class CarController {
         @RequestParam(required = false) String brand,
         @RequestParam(required = false) String model
     ) {
+        log.info("Ricevuta richiesta di recupero di tutte le auto");
+
         List<Car> cars = carService.searchCars(brand, model); // Il tuo service restituisce la lista filtrata   
+
+        log.info("Recuperati {} auto dal database", cars.size());
 
         // Creiamo un messaggio dinamico per aiutare chi legge i log
         String message = cars.isEmpty() ? "Nessuna auto trovata" : "Lista auto recuperata con successo";
