@@ -38,7 +38,7 @@ public class CarServiceImpl implements CarService {
         LocalDate oggi = LocalDate.now();
         car.setRegistrationDate(oggi); // Impostiamo la data di registrazione a oggi
 
-        String currentRequestId = MDC.get("car-Request-ID");
+        String currentRequestId = MDC.get("x-Request-ID");
         car.setRequestId(currentRequestId);
         
         log.info("Auto salvata: {} modello {} il {}", car.getBrand(), car.getModel(), oggi);
@@ -50,7 +50,7 @@ public class CarServiceImpl implements CarService {
     public void processExternalCheck(Car car, String requestId) {
         try {
             // Fondamentale: iniettiamo l'ID nel nuovo thread
-            MDC.put("car-Request-ID", requestId);
+            MDC.put("x-Request-ID", requestId);
 
             log.info("Inizio controllo esterno per: {} modello {} il {}" , car.getBrand(), car.getModel(), LocalDate.now());
 
@@ -69,7 +69,7 @@ public class CarServiceImpl implements CarService {
             log.error("Errore durante il controllo asincrono", e);
         } finally {
             // Puliamo l'MDC anche qui per buona norma
-            MDC.remove("car-Request-ID");
+            MDC.remove("x-Request-ID");
         }
     }
 
