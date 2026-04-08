@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,19 @@ public class GlobalExceptionHandler {
 
         // 4. Restituiamo la risposta con lo status 400 (Bad Request)
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<CustomResponse<String>> handleStatusException(ResponseStatusException ex) {
+        CustomResponse<String> response = new CustomResponse<>(
+            "Risorsa non trovata o errore nella richiesta", 
+            ex.getReason() // Questo prende SOLO il testo "Concessionario non trovato con ID: 1"
+        );
+        
+        // Usiamo lo status code REALE dell'eccezione (es. 404) invece del 500 fisso
+        return new ResponseEntity<>(response, ex.getStatusCode());
     }
 
     @ExceptionHandler(Exception.class)

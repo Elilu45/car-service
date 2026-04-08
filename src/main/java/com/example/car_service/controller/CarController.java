@@ -2,7 +2,6 @@ package com.example.car_service.controller;
 
 import com.example.car_service.dto.CarDTO;
 import com.example.car_service.dto.CustomResponse;
-import com.example.car_service.model.Car;
 import com.example.car_service.service.CarService;
 
 import jakarta.validation.Valid;
@@ -28,35 +27,34 @@ public class CarController {
 
 
     @PostMapping
-    public ResponseEntity<CustomResponse<Car>> create(@Valid @RequestBody CarDTO carDTO) {
+    public ResponseEntity<CustomResponse<CarDTO>> create(@Valid @RequestBody CarDTO carDTO) {
         // Trasformiamo il DTO in una Entity per salvarla nel DB
         // 1. Recuperiamo l'ID che il Filtro ha messo nell'MDC
         String currentRequestId = MDC.get("x-Request-ID");
 
-        Car savedCar = carService.saveCar(carDTO); // Il service si occupa di tutto, anche di mettere la data!
-
-        log.info("Auto salvata con ID {}. Lancio controllo asincrono...", savedCar.getId());
+        CarDTO savedCarDto = carService.saveCar(carDTO); // Ora riceve un DTO
+        log.info("Auto salvata con ID {}. Lancio controllo asincrono...", savedCarDto.getId());
 
         // Chiamata asincrona: il codice NON si ferma qui ad aspettare 5 secondi!
-        carService.processExternalCheck(savedCar, currentRequestId);
+        carService.processExternalCheck(savedCarDto, currentRequestId);
 
         // Creiamo il nostro oggetto risposta personalizzato
-        CustomResponse<Car> response = new CustomResponse<>(
+        CustomResponse<CarDTO> response = new CustomResponse<>(
    "Ottimo! L'auto è stata salvata nel database.", 
-            savedCar
+            savedCarDto
         );
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<CustomResponse<List<Car>>> getByBrand(
+    public ResponseEntity<CustomResponse<List<CarDTO>>> getByBrand(
         @RequestParam(required = false) String brand,
         @RequestParam(required = false) String model
     ) {
         log.info("Ricevuta richiesta di recupero di tutte le auto");
 
-        List<Car> cars = carService.searchCars(brand, model); // Il tuo service restituisce la lista filtrata   
+        List<CarDTO> cars = carService.searchCars(brand, model); // Il tuo service restituisce la lista filtrata   
 
         log.info("Recuperati {} auto dal database", cars.size());
 

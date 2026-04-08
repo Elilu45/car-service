@@ -3,6 +3,7 @@ package com.example.car_service.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,6 +22,9 @@ public class Concessionario{
     private String citta;
     private String telefono;
     private LocalDate dataApertura;
+
+    @OneToMany(mappedBy = "concessionario") // "Guarda il campo che ho creato nell'Auto"
+    private List<Car> listaAuto;
 
     @Column(name = "conc_Request_ID") // <--- Questo dice a Hibernate come chiamare la colonna nel DB
     @JsonProperty("conc-Request-ID") // <--- Questo dice a Jackson come chiamare il campo nel JSON

@@ -2,6 +2,7 @@ package com.example.car_service.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
@@ -25,7 +26,7 @@ public class ConcessionarioServiceImpl implements ConcessionarioService {
     }
     
     @Override
-    public Concessionario saveConcessionario(ConcessionarioDTO concessionarioDTO) {
+    public ConcessionarioDTO saveConcessionario(ConcessionarioDTO concessionarioDTO) {
         log.info("Salvataggio concessionario: {} {}", concessionarioDTO.getNome(), concessionarioDTO.getCitta());
 
         Concessionario concessionario = new Concessionario();
@@ -39,19 +40,23 @@ public class ConcessionarioServiceImpl implements ConcessionarioService {
 
         String currentRequestId = MDC.get("x-Request-ID");
         concessionario.setRequestId(currentRequestId);
+
+        // Salva l'Entity
+        Concessionario concessionarioSalvato = repository.save(concessionario);
+        log.info("Concessionario salvato: {} {}", concessionarioSalvato.getNome(), concessionarioSalvato.getCitta());
         
-        log.info("Concessionario salvato: {} {}", concessionario.getNome(), concessionario.getCitta());
-        return repository.save(concessionario);
+        // 3. ENTITY -> DTO (Conversione per la Risposta)
+        return mapToDTO(concessionarioSalvato);
     }
 
     @Async // <--- DICHIARA CHE IL METODO GIRA SU UN ALTRO THREAD
     @Override
-    public void processExternalCheck(Concessionario concessionario, String requestId) {
+    public void processExternalCheck(ConcessionarioDTO concessionarioDto, String requestId) {
         try {
             // Fondamentale: iniettiamo l'ID nel nuovo thread
             MDC.put("x-Request-ID", requestId);
 
-            log.info("Inizio controllo esterno per: {} sito in {} aperto dal {}" , concessionario.getNome(), concessionario.getCitta(), LocalDate.now());
+            log.info("Inizio controllo esterno per: {} sito in {} aperto dal {}" , concessionarioDto.getNome(), concessionarioDto.getCitta(), LocalDate.now());
 
             // Simuliamo un'attesa di 5 secondi
             Thread.sleep(5000);
@@ -62,7 +67,7 @@ public class ConcessionarioServiceImpl implements ConcessionarioService {
             // 2. FONDAMENTALE: Salvi di nuovo l'oggetto per aggiornare il DB
             //repository.save(car);
             
-            log.info("Controllo completato per: {} sito in {} aperto dal {}", concessionario.getNome(), concessionario.getCitta(), concessionario.getDataApertura());
+            log.info("Controllo completato per: {} sito in {} aperto dal {}", concessionarioDto.getNome(), concessionarioDto.getCitta(), concessionarioDto.getDataApertura());
 
         } catch (InterruptedException e) {
             log.error("Errore durante il controllo asincrono", e);
@@ -75,17 +80,36 @@ public class ConcessionarioServiceImpl implements ConcessionarioService {
 
 
     @Override
-    public List<Concessionario> searchConcessionari(String nome, String citta) {
-        // Spostiamo qui la logica degli IF che avevi nel Controller
+    public List<ConcessionarioDTO> searchConcessionari(String nome, String citta) {
+        List<Concessionario> entities;
+        // 1. Cerchiamo le Entity (Mondo Interno)
         if (nome != null && citta != null) {
-            return repository.findByNomeIgnoreCaseContainingAndCittaIgnoreCaseContaining(nome, citta);
+            entities = repository.findByNomeIgnoreCaseContainingAndCittaIgnoreCaseContaining(nome, citta);
         } else if (nome != null) {
-            return repository.findByNomeIgnoreCaseContaining(nome);
+            entities = repository.findByNomeIgnoreCaseContaining(nome);
         } else if (citta != null) {
-            return repository.findByCittaIgnoreCaseContaining(citta);
+            entities = repository.findByCittaIgnoreCaseContaining(citta);
         } else {
-            return repository.findAll();
+            entities = repository.findAll();
         }
+                // 2. Trasformiamo la lista di Entity in una lista di DTO (Mondo Esterno)
+        return entities.stream()
+                .map(this::mapToDTO) // Usa il metodo di supporto per convertire ogni Entity in DTO
+                .collect(Collectors.toList());
+    }
+
+
+    // METODO DI SUPPORTO (Da aggiungere in fondo alla classe)
+    private ConcessionarioDTO mapToDTO(Concessionario concessionario) {
+        ConcessionarioDTO dto = new ConcessionarioDTO();
+        dto.setId(concessionario.getId());
+        dto.setNome(concessionario.getNome());
+        dto.setIndirizzo(concessionario.getIndirizzo());
+        dto.setCitta(concessionario.getCitta());
+        dto.setTelefono(concessionario.getTelefono());
+        dto.setDataApertura(concessionario.getDataApertura()); // Fondamentale per non avere null!
+        
+        return dto;
     }
 
 }

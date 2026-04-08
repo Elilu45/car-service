@@ -1,6 +1,8 @@
 package com.example.car_service.dto;
 
-//import java.time.LocalDate;
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 //import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -12,6 +14,9 @@ import lombok.Data; // Importa l'annotazione magica
 
 @Data // Questa annotazione genera automaticamente: Getter, Setter, toString, equals e hashCode
 public class CarDTO {
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long id; // <--- AGGIUNGI QUESTO CAMPO!
     
     @NotBlank(message = "La marca non può essere vuota")
     private String brand;
@@ -23,8 +28,13 @@ public class CarDTO {
     @Positive(message = "Il prezzo deve essere maggiore di zero")
     private Double price;
 
+    @NotNull(message = "L'ID del concessionario non può essere vuoto")
+    private Long concessionarioId;
+
     // @NotNull(message = "La data di registrazione non può essere vuota")
     // @PastOrPresent(message = "La data non può essere nel futuro")
     // @JsonFormat(pattern = "yyyy-MM-dd")
-    // private LocalDate registrationDate;
+    private LocalDate registrationDate;
+
+    private Boolean checkAuto;
 }

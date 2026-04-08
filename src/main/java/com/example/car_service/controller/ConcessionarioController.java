@@ -29,35 +29,35 @@ public class ConcessionarioController {
     }
     
     @PostMapping
-    public ResponseEntity<CustomResponse<Concessionario>> create(@Valid @RequestBody ConcessionarioDTO concessionarioDTO) {
+    public ResponseEntity<CustomResponse<ConcessionarioDTO>> create(@Valid @RequestBody ConcessionarioDTO concessionarioDTO) {
                 // Trasformiamo il DTO in una Entity per salvarla nel DB
         // 1. Recuperiamo l'ID che il Filtro ha messo nell'MDC
         String currentRequestId = MDC.get("x-Request-ID");
 
-        Concessionario savedConcessionario = concessionarioService.saveConcessionario(concessionarioDTO); // Il service si occupa di tutto, anche di mettere la data!
+        ConcessionarioDTO savedConcessionarioDto = concessionarioService.saveConcessionario(concessionarioDTO); // Il service si occupa di tutto, anche di mettere la data!
 
-        log.info("Concessionario salvato con ID {}. Lancio controllo asincrono...", savedConcessionario.getId());
+        log.info("Concessionario salvato con ID {}. Lancio controllo asincrono...", savedConcessionarioDto.getId());
 
         // Chiamata asincrona: il codice NON si ferma qui ad aspettare 5 secondi!
-        concessionarioService.processExternalCheck(savedConcessionario, currentRequestId);
+        concessionarioService.processExternalCheck(savedConcessionarioDto, currentRequestId);
 
         // Creiamo il nostro oggetto risposta personalizzato
-        CustomResponse<Concessionario> response = new CustomResponse<>(
+        CustomResponse<ConcessionarioDTO> response = new CustomResponse<>(
    "Ottimo! Il concessionario è stato salvato nel database.", 
-            savedConcessionario
+            savedConcessionarioDto
         );
         
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<CustomResponse<List<Concessionario>>> getByBrand(
+    public ResponseEntity<CustomResponse<List<ConcessionarioDTO>>> getByBrand(
         @RequestParam(required = false) String nome,
         @RequestParam(required = false) String citta
     ) {
         log.info("Ricevuta richiesta di recupero di tutti i concessionari");
 
-        List<Concessionario> concessionari = concessionarioService.searchConcessionari(nome, citta); // Il tuo service restituisce la lista filtrata   
+        List<ConcessionarioDTO> concessionari = concessionarioService.searchConcessionari(nome, citta); // Il tuo service restituisce la lista filtrata   
 
         log.info("Recuperati {} concessionari dal database", concessionari.size());
 

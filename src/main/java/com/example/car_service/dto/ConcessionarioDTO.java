@@ -1,5 +1,9 @@
 package com.example.car_service.dto;
 
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
@@ -8,6 +12,8 @@ import lombok.Data;
 @Data
 public class ConcessionarioDTO {
     
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long id; // <--- AGGIUNGI QUESTO CAMPO!
     @NotBlank(message = "Il nome non può essere vuoto")
     private String nome;
     @NotBlank(message = "L'indirizzo non può essere vuoto")
@@ -19,4 +25,5 @@ public class ConcessionarioDTO {
     @Pattern(regexp = "^[0-9]*$", message = "Il numero di telefono deve contenere solo cifre")
     //@Pattern(regexp = "^\\d{10}$", message = "Il telefono deve essere composto da esattamente 10 numeri")
     private String telefono;
+    private LocalDate dataApertura;
 }
