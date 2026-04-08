@@ -2,7 +2,6 @@ package com.example.car_service.service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
@@ -11,29 +10,24 @@ import org.springframework.stereotype.Service;
 import com.example.car_service.dto.ConcessionarioDTO;
 import com.example.car_service.model.Concessionario;
 import com.example.car_service.repository.ConcessionarioRepository;
+import com.example.car_service.mapper.ConcessionarioMapper;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service // <-- FONDAMENTALE: Dice a Spring che questa è la classe da "iniettare"
 @Slf4j // <-- Questa annotazione crea automaticamente un oggetto chiamato 'log'
+@RequiredArgsConstructor // <--- Genera il costruttore per tutti i campi "final"
 public class ConcessionarioServiceImpl implements ConcessionarioService {
 
     private final ConcessionarioRepository repository;
-
-    // Dependency Injection tramite costruttore (quello che fanno i tuoi colleghi)
-    public ConcessionarioServiceImpl(ConcessionarioRepository repository) {
-        this.repository = repository;
-    }
+    private final ConcessionarioMapper concessionarioMapper; // Aggiungi questo campo per usare MapStruct
     
     @Override
     public ConcessionarioDTO saveConcessionario(ConcessionarioDTO concessionarioDTO) {
         log.info("Salvataggio concessionario: {} {}", concessionarioDTO.getNome(), concessionarioDTO.getCitta());
 
-        Concessionario concessionario = new Concessionario();
-        concessionario.setNome(concessionarioDTO.getNome());
-        concessionario.setIndirizzo(concessionarioDTO.getIndirizzo());
-        concessionario.setCitta(concessionarioDTO.getCitta());
-        concessionario.setTelefono(concessionarioDTO.getTelefono());
+        Concessionario concessionario = concessionarioMapper.toEntity(concessionarioDTO);
 
         LocalDate oggi = LocalDate.now();
         concessionario.setDataApertura(oggi); // Impostiamo la data di registrazione a oggi
@@ -46,7 +40,7 @@ public class ConcessionarioServiceImpl implements ConcessionarioService {
         log.info("Concessionario salvato: {} {}", concessionarioSalvato.getNome(), concessionarioSalvato.getCitta());
         
         // 3. ENTITY -> DTO (Conversione per la Risposta)
-        return mapToDTO(concessionarioSalvato);
+        return concessionarioMapper.toDTO(repository.save(concessionario));
     }
 
     @Async // <--- DICHIARA CHE IL METODO GIRA SU UN ALTRO THREAD
@@ -93,23 +87,6 @@ public class ConcessionarioServiceImpl implements ConcessionarioService {
             entities = repository.findAll();
         }
                 // 2. Trasformiamo la lista di Entity in una lista di DTO (Mondo Esterno)
-        return entities.stream()
-                .map(this::mapToDTO) // Usa il metodo di supporto per convertire ogni Entity in DTO
-                .collect(Collectors.toList());
+        return concessionarioMapper.toDTOList(entities);
     }
-
-
-    // METODO DI SUPPORTO (Da aggiungere in fondo alla classe)
-    private ConcessionarioDTO mapToDTO(Concessionario concessionario) {
-        ConcessionarioDTO dto = new ConcessionarioDTO();
-        dto.setId(concessionario.getId());
-        dto.setNome(concessionario.getNome());
-        dto.setIndirizzo(concessionario.getIndirizzo());
-        dto.setCitta(concessionario.getCitta());
-        dto.setTelefono(concessionario.getTelefono());
-        dto.setDataApertura(concessionario.getDataApertura()); // Fondamentale per non avere null!
-        
-        return dto;
-    }
-
 }
