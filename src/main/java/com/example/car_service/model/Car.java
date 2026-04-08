@@ -20,6 +20,10 @@ public class Car {
     private LocalDate registrationDate;
     private Boolean checkAuto = false;
 
+    @ManyToOne
+    @JoinColumn(name = "concessionario_id") // Questa è la Foreign Key fisica nel DB
+    private Concessionario concessionario;
+
     @Column(name = "car_Request_ID") // <--- Questo dice a Hibernate come chiamare la colonna nel DB
     @JsonProperty("car-Request-ID") // <--- Questo dice a Jackson come chiamare il campo nel JSON
     private String requestId;
