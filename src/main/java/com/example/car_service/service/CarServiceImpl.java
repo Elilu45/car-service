@@ -5,7 +5,9 @@ import com.example.car_service.model.Car;
 import com.example.car_service.model.Concessionario;
 import com.example.car_service.repository.CarRepository;
 import com.example.car_service.repository.ConcessionarioRepository;
+import com.example.car_service.mapper.CarMapper;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC; // <--- Per la gestione del contesto dei log
 import org.springframework.http.HttpStatus;
@@ -17,31 +19,23 @@ import java.time.LocalDate;
 //import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service // <-- FONDAMENTALE: Dice a Spring che questa è la classe da "iniettare"
 @Slf4j // <-- Questa annotazione crea automaticamente un oggetto chiamato 'log'
+@RequiredArgsConstructor // <--- Genera il costruttore per tutti i campi "final"
 public class CarServiceImpl implements CarService {
 
     private final CarRepository repository;
-    private final ConcessionarioRepository concessionarioRepository; // Aggiungi questo
-
-
-    // Dependency Injection tramite costruttore (quello che fanno i tuoi colleghi)
-    public CarServiceImpl(CarRepository repository, ConcessionarioRepository concessionarioRepository) {
-        this.repository = repository;
-        this.concessionarioRepository = concessionarioRepository;
-    }
+    private final ConcessionarioRepository concessionarioRepository; // Aggiungi questo campo per accedere ai concessionari
+    private final CarMapper carMapper; // Aggiungi questo campo per usare MapStruct
 
 
     @Override
     public CarDTO saveCar(CarDTO carDTO) {
         log.info("Salvataggio auto: {} modello {}", carDTO.getBrand(), carDTO.getModel());
 
-        Car car = new Car();
-        car.setBrand(carDTO.getBrand());
-        car.setModel(carDTO.getModel());
-        car.setPrice(carDTO.getPrice());
+        // 1. Usiamo MapStruct per creare l'Entity dal DTO
+        Car car = carMapper.toEntity(carDTO);
 
         // 2. RECUPERIAMO IL CONCESSIONARIO DAL DB
         // Usiamo il repository dei concessionari (che devi iniettare con @Autowired)
@@ -61,7 +55,7 @@ public class CarServiceImpl implements CarService {
         log.info("Auto salvata: {} modello {} il {}", carSalvata.getBrand(), carSalvata.getModel(), oggi);
 
         // 3. ENTITY -> DTO (Conversione per la Risposta)
-        return mapToDTO(carSalvata);
+        return carMapper.toDTO(repository.save(car));
     }
 
     @Async // <--- DICHIARA CHE IL METODO GIRA SU UN ALTRO THREAD
@@ -113,28 +107,6 @@ public class CarServiceImpl implements CarService {
         }
 
         // 2. Trasformiamo la lista di Entity in una lista di DTO (Mondo Esterno)
-        return entities.stream()
-                .map(this::mapToDTO) // Usa il metodo di supporto per convertire ogni Entity in DTO
-                .collect(Collectors.toList());
+        return carMapper.toDTOList(entities);
     }
-
-
-    // METODO DI SUPPORTO (Da aggiungere in fondo alla classe)
-    private CarDTO mapToDTO(Car car) {
-        CarDTO dto = new CarDTO();
-        dto.setId(car.getId());
-        dto.setBrand(car.getBrand());
-        dto.setModel(car.getModel());
-        dto.setPrice(car.getPrice());
-        dto.setRegistrationDate(car.getRegistrationDate());
-        dto.setCheckAuto(car.getCheckAuto()); // Fondamentale per non avere null!
-        
-        // Mappiamo solo l'ID del concessionario per rompere la circolarità
-        if (car.getConcessionario() != null) {
-            dto.setConcessionarioId(car.getConcessionario().getId());
-        }
-        
-        return dto;
-    }
-
 }

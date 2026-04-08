@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.car_service.dto.ConcessionarioDTO;
 import com.example.car_service.dto.CustomResponse;
-import com.example.car_service.model.Concessionario;
 import com.example.car_service.service.ConcessionarioService;
 
 import jakarta.validation.Valid;
