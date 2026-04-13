@@ -16,7 +16,7 @@ import lombok.Data; // Importa l'annotazione magica
 public class CarDTO {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Long id; // <--- AGGIUNGI QUESTO CAMPO!
+    private Long id; 
     
     @NotBlank(message = "La marca non può essere vuota")
     private String brand;

@@ -62,5 +62,6 @@ public class CarController {
         String message = cars.isEmpty() ? "Nessuna auto trovata" : "Lista auto recuperata con successo";
 
         return ResponseEntity.ok(new CustomResponse<>(message, cars));
+        
     }
 }
