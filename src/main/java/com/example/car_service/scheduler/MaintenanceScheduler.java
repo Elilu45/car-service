@@ -19,12 +19,18 @@ public class MaintenanceScheduler {
     private final MaintenanceRepository maintenanceRepository;
     private final JavaMailSender mailSender;
 
+    @Value("${maintenance.monitor.enabled}")
+    private boolean isMonitorEnabled;
+
     @Value("${maintenance.email.enabled}")
     private boolean isEmailEnabled;
 
     // Esegue il compito ogni tot secondi come definito in application.properties
     @Scheduled(fixedRateString = "${maintenance.monitor.rate}")
     public void monitorMaintenances() {
+        if (!isMonitorEnabled) {
+            return; // Esce subito e non manda nulla
+        }
         long count = maintenanceRepository.count();
         log.info("--- REPORT AUTOMATICO ---");
         log.info("Totale manutenzioni a sistema: {}", count);
