@@ -2,6 +2,7 @@ package com.example.car_service.scheduler;
 
 import com.example.car_service.repository.MaintenanceRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,6 +19,9 @@ public class MaintenanceScheduler {
     private final MaintenanceRepository maintenanceRepository;
     private final JavaMailSender mailSender;
 
+    @Value("${maintenance.email.enabled}")
+    private boolean isEmailEnabled;
+
     // Esegue il compito ogni tot secondi come definito in application.properties
     @Scheduled(fixedRateString = "${maintenance.monitor.rate}")
     public void monitorMaintenances() {
@@ -30,6 +34,9 @@ public class MaintenanceScheduler {
     @Scheduled(fixedRate = 30000)
     //@Scheduled(cron = "0 0 12 * * ?") // Ogni giorno a mezzogiorno
     public void reportDiMezzogiorno() {
+        if (!isEmailEnabled) {
+            return; // Esce subito e non manda nulla
+        }
         log.info("Generazione report giornaliero...");
 
         // 1. Recuperiamo il dato dal database
