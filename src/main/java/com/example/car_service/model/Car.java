@@ -20,6 +20,7 @@ public class Car {
     private Double price;
     private LocalDate registrationDate;
     private Boolean checkAuto = false;
+    private String targa;
 
     @ManyToOne
     @JoinColumn(name = "concessionario_id") // Questa è la Foreign Key fisica nel DB

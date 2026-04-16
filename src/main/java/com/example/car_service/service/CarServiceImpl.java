@@ -34,6 +34,10 @@ public class CarServiceImpl implements CarService {
     public CarDTO saveCar(CarDTO carDTO) {
         log.info("Salvataggio auto: {} modello {}", carDTO.getBrand(), carDTO.getModel());
 
+        // Normalizzazione: rendiamo tutto maiuscolo e togliamo eventuali spazi ai lati
+        String targaPulita = carDTO.getTarga().toUpperCase().trim();
+        carDTO.setTarga(targaPulita);
+
         // 1. Usiamo MapStruct per creare l'Entity dal DTO
         Car car = carMapper.toEntity(carDTO);
 
@@ -55,7 +59,7 @@ public class CarServiceImpl implements CarService {
         log.info("Auto salvata: {} modello {} il {}", carSalvata.getBrand(), carSalvata.getModel(), oggi);
 
         // 3. ENTITY -> DTO (Conversione per la Risposta)
-        return carMapper.toDTO(repository.save(car));
+        return carMapper.toDTO(carSalvata);
     }
 
     @Async // <--- DICHIARA CHE IL METODO GIRA SU UN ALTRO THREAD
