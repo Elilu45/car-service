@@ -64,4 +64,12 @@ public class CarController {
         return ResponseEntity.ok(new CustomResponse<>(message, cars));
         
     }
+
+
+    @GetMapping("/{targa}/check-washing")
+    public ResponseEntity<String> checkCarWashing(@PathVariable String targa) {
+        // Chiamiamo il Service che si occuperà della logica
+        String status = carService.checkWashingStatus(targa);
+        return ResponseEntity.ok("Stato lavaggio per auto " + targa + ": " + status);
+    }
 }

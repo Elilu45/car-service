@@ -8,9 +8,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j // <-- Questa annotazione crea automaticamente un oggetto chiamato 'log'
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -48,6 +53,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
 
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<CustomResponse<String>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        // 1. Messaggio principale chiaro: cosa è successo?
+        // 2. Dettaglio (data): usiamo il messaggio dell'eccezione
+        CustomResponse<String> response = new CustomResponse<>(
+            "Risorsa non trovata", 
+            ex.getMessage() 
+        );
+        log.warn("ResourceNotFoundException intercettata: {}", ex.getMessage());
+
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CustomResponse<String>> handleAllExceptions(Exception ex) {
         CustomResponse<String> response = new CustomResponse<>(
@@ -56,4 +76,5 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 }
