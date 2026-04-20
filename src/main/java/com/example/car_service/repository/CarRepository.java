@@ -17,4 +17,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     List<Car> findByModelIgnoreCaseContaining(String model);
 
     List<Car> findByTargaIgnoreCaseContaining(String targa);
+
+    Boolean existsByTargaIgnoreCase(String targa);
 }

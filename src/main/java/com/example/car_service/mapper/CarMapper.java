@@ -23,6 +23,7 @@ public interface CarMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "requestId", ignore = true) // <--- AGGIUNGI QUESTA RIGA
     // Se checkAuto nel DTO è null, MapStruct imposterà false nell'Entity
+    @Mapping(target = "maintenances", ignore = true) // <--- AGGIUNGI QUESTA PER TOGLIERE IL WARNING
     @Mapping(target = "checkAuto", source = "checkAuto", defaultValue = "false")
     Car toEntity(CarDTO carDTO);
 

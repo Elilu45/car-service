@@ -1,6 +1,7 @@
 package com.example.car_service.service;
 
 import com.example.car_service.dto.CarDTO;
+import com.example.car_service.exception.ResourceNotFoundException;
 import com.example.car_service.model.Car;
 import com.example.car_service.model.Concessionario;
 import com.example.car_service.repository.CarRepository;
@@ -13,7 +14,9 @@ import org.slf4j.MDC; // <--- Per la gestione del contesto dei log
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDate;
 //import java.time.LocalTime;
@@ -25,10 +28,14 @@ import java.util.Objects;
 @RequiredArgsConstructor // <--- Genera il costruttore per tutti i campi "final"
 public class CarServiceImpl implements CarService {
 
-    private final CarRepository repository;
+    private final CarRepository carRepository;
     private final ConcessionarioRepository concessionarioRepository; // Aggiungi questo campo per accedere ai concessionari
     private final CarMapper carMapper; // Aggiungi questo campo per usare MapStruct
+    private final RestTemplate restTemplate;
 
+    //Definiamo l'URL del tuo Mock
+    @Value("${external.washing.url}")
+    private String washingUrl;
 
     @Override
     public CarDTO saveCar(CarDTO carDTO) {
@@ -55,7 +62,7 @@ public class CarServiceImpl implements CarService {
         car.setRequestId(currentRequestId);
 
         // Salva l'Entity
-        Car carSalvata = repository.save(car);
+        Car carSalvata = carRepository.save(car);
         log.info("Auto salvata: {} modello {} il {}", carSalvata.getBrand(), carSalvata.getModel(), oggi);
 
         // 3. ENTITY -> DTO (Conversione per la Risposta)
@@ -76,14 +83,14 @@ public class CarServiceImpl implements CarService {
 
             // 1. RECUPERA l'Entity aggiornata dal database usando l'ID del DTO
             // Usiamo l'ID che abbiamo aggiunto al DTO prima!
-            Car car = repository.findById(Objects.requireNonNull(carDTO.getId(), "ID mancante"))
+            Car car = carRepository.findById(Objects.requireNonNull(carDTO.getId(), "ID mancante"))
                     .orElseThrow(() -> new RuntimeException("Auto non trovata durante il controllo asincrono"));
 
             // 2. MODIFICA l'Entity (non il DTO)
             car.setCheckAuto(true);
             
             // 3. SALVA l'Entity
-            repository.save(car);
+            carRepository.save(car);
             
             log.info("Controllo completato per: {} modello {} il {}", car.getBrand(), car.getModel(), LocalDate.now());
 
@@ -101,16 +108,39 @@ public class CarServiceImpl implements CarService {
 
         // 1. Cerchiamo le Entity (Mondo Interno)
         if (brand != null && model != null) {
-            entities = repository.findByBrandIgnoreCaseContainingAndModelIgnoreCaseContaining(brand, model);
+            entities = carRepository.findByBrandIgnoreCaseContainingAndModelIgnoreCaseContaining(brand, model);
         } else if (brand != null) {
-            entities = repository.findByBrandIgnoreCaseContaining(brand);
+            entities = carRepository.findByBrandIgnoreCaseContaining(brand);
         } else if (model != null) {
-            entities = repository.findByModelIgnoreCaseContaining(model);
+            entities = carRepository.findByModelIgnoreCaseContaining(model);
         } else {
-            entities = repository.findAll();
+            entities = carRepository.findAll();
         }
-
         // 2. Trasformiamo la lista di Entity in una lista di DTO (Mondo Esterno)
         return carMapper.toDTOList(entities);
+    }
+
+
+    public String checkWashingStatus(String targa) {
+        // 1. VALIDAZIONE: L'auto esiste nel mio sistema?
+        // Usiamo il repository che abbiamo già per cercare l'auto
+        boolean exists = carRepository.existsByTargaIgnoreCase(targa); 
+        
+        if (!exists) {
+            // Se non esiste, ci fermiamo subito. Inutile chiamare WireMock!
+            log.warn("Tentativo di check lavaggio per targa inesistente: {}", targa);
+            throw new ResourceNotFoundException("Auto con targa " + targa + " non trovata");
+        }
+
+        // 2. CHIAMATA ESTERNA: Solo se l'auto esiste, facciamo la chiamata a WireMock
+        // Facciamo la chiamata GET
+        // RestTemplate.getForObject prende l'URL e il tipo di risposta che ci aspettiamo (String)
+        try {
+            log.info("L'auto {} esiste. Procedo al controllo lavaggio esterno...", targa);
+            return restTemplate.getForObject(Objects.requireNonNull(washingUrl), String.class);
+        } catch (Exception e) {
+            log.error("Errore comunicazione con WireMock: {}", e.getMessage());
+            return "Servizio lavaggio non raggiungibile!";
+        }
     }
 }

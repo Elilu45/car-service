@@ -11,4 +11,6 @@ public interface CarService {
     CarDTO saveCar(CarDTO carDTO);
 
     void processExternalCheck(CarDTO carDTO, String requestId); // Promessa 3: "Farò un controllo esterno (simulato) su un'auto"
+
+    String checkWashingStatus(String targa); // Promessa 4: "Ti dirò se l'auto è in lavaggio o no"
 }
