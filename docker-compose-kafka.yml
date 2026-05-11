@@ -2,6 +2,8 @@ version: '3'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
+    ports:
+      - "2181:2181" # <--- Fondamentale per Offset Explorer
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
