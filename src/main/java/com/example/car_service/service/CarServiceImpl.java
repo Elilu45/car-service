@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC; // <--- Per la gestione del contesto dei log
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -32,6 +33,7 @@ public class CarServiceImpl implements CarService {
     private final ConcessionarioRepository concessionarioRepository; // Aggiungi questo campo per accedere ai concessionari
     private final CarMapper carMapper; // Aggiungi questo campo per usare MapStruct
     private final RestTemplate restTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate; // Iniettiamo il template di Kafka
 
     //Definiamo l'URL del tuo Mock
     @Value("${external.washing.url}")
@@ -66,7 +68,18 @@ public class CarServiceImpl implements CarService {
         log.info("Auto salvata: {} modello {} il {}", carSalvata.getBrand(), carSalvata.getModel(), oggi);
 
         // 3. ENTITY -> DTO (Conversione per la Risposta)
-        return carMapper.toDTO(carSalvata);
+        CarDTO savedDto = carMapper.toDTO(carSalvata);
+
+        // 4. NUOVO: Invio messaggio a Kafka
+        try {
+            String message = "Creata nuova auto con targa: " + savedDto.getTarga();
+            kafkaTemplate.send("car-topic", message);
+            log.info("Messaggio inviato al topic car-topic");
+        } catch (Exception e) {
+            log.error("Errore invio Kafka", e);
+        }
+
+        return savedDto;
     }
 
     @Async // <--- DICHIARA CHE IL METODO GIRA SU UN ALTRO THREAD
