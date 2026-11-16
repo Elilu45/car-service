@@ -3,6 +3,7 @@ package com.example.car_service.consumer;
 import java.time.LocalDateTime;
 
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.example.car_service.model.CarEventLog;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "spring.kafka.enabled", havingValue = "true")
 public class CarConsumer {
 
     private final CarEventLogRepository logRepository;
